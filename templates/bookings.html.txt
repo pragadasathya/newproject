@@ -1,0 +1,6 @@
+<h2>Bookings</h2>
+<ul>
+{% for b in bookings %}
+  <li>{{ b[1] }} - {{ b[3] }} - {{ b[4] }}</li>
+{% endfor %}
+</ul>
