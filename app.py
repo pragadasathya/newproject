@@ -3,12 +3,13 @@ import pymysql
 
 app = Flask(__name__)
 
-connection = pymysql.connect(
-    host='RDS-ENDPOINT',
-    user='admin',
-    password='password',
-    database='bookingdb'
-)
+def get_connection():
+    return pymysql.connect(
+        host='RDS-ENDPOINT',
+        user='admin',
+        password='password',
+        database='bookingdb'
+    )
 
 @app.route('/')
 def index():
@@ -16,23 +17,26 @@ def index():
 
 @app.route('/book', methods=['POST'])
 def book():
-    name = request.form['name']
-    email = request.form['email']
-    date = request.form['date']
-    slot = request.form['slot']
-
-    with connection.cursor() as cursor:
+    conn = get_connection()
+    with conn.cursor() as cursor:
         sql = "INSERT INTO bookings (name, email, date, slot) VALUES (%s, %s, %s, %s)"
-        cursor.execute(sql, (name, email, date, slot))
-        connection.commit()
-
+        cursor.execute(sql, (
+            request.form['name'],
+            request.form['email'],
+            request.form['date'],
+            request.form['slot']
+        ))
+        conn.commit()
+    conn.close()
     return redirect('/bookings')
 
 @app.route('/bookings')
 def bookings():
-    with connection.cursor() as cursor:
+    conn = get_connection()
+    with conn.cursor() as cursor:
         cursor.execute("SELECT * FROM bookings")
         data = cursor.fetchall()
+    conn.close()
     return render_template('bookings.html', bookings=data)
 
 if __name__ == '__main__':
